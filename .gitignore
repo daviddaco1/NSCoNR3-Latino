@@ -1,0 +1,6 @@
+/ISO/*.iso
+/EXTRACT/UPDATE
+/EXTRACT/DATA/*
+!/EXTRACT/DATA/files
+/EXTRACT/DATA/files/*
+!/EXTRACT/DATA/files/sound
