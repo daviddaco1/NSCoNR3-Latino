@@ -1,0 +1,81 @@
+# ================================================================================
+# JoJo's Bizarre Adventure: Eyes Of Heaven
+# XFBIN extract
+# QuickBMS script by Dave, 2021
+# ================================================================================
+
+IDString "NUCC"
+
+FindLoc OFFSET String "TONE" 0 ""
+
+If OFFSET = ""
+	Break
+Endif
+
+Goto OFFSET
+Get JUNK Long
+
+FindLoc TONE_TABLE String "TONE" 0 ""				# 2nd occurence is the actual file table
+
+If TONE_TABLE = ""
+	Print "File table not found"
+	Break
+Endif
+
+Goto TONE_TABLE
+Get JUNK Long
+
+FindLoc PACK_DATA String "PACK" 0 ""				# audio data
+
+If PACK_DATA = ""
+	Print "Data block not found"
+	Break
+Endif
+
+
+Goto TONE_TABLE
+Get JUNK Long
+Get JUNK Long
+Get ENTRIES Long
+SavePos TONE_ENTRY
+
+For A = 1 To ENTRIES
+	Goto TONE_ENTRY
+	Get INFO_OFFSET Long
+	Get INFO_SIZE Long
+	XMath INFO_OFFSET "INFO_OFFSET + TONE_TABLE + 12"
+	Goto INFO_OFFSET
+	Get FILE_TYPE Short
+	Get JUNK Short
+	Get JUNK Long
+	Get TEXT_LEN Byte
+	GetDString FILENAME TEXT_LEN
+
+	Padding 4
+
+	Get JUNK1 Long
+	Get JUNK2 Long
+
+	If FILE_TYPE = 0xFFFF
+		Get OFFSET Long
+		XMath OFFSET "OFFSET + PACK_DATA + 8"
+		Get SIZE Long
+
+		If SIZE > 0
+			Goto OFFSET
+			GetDString FILE_ID 4
+
+			If FILE_ID = "BNSF"
+				String FILENAME + ".bnsf"
+			Elif FILE_ID = "RIFF"
+				String FILENAME + ".at3"
+			Endif
+
+			Log FILENAME OFFSET SIZE
+
+		Endif
+
+	Endif
+
+	Math TONE_ENTRY + 8
+Next A
